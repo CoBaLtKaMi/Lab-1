@@ -16,18 +16,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Панель управления -->
         <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" 
                 Padding="12" CornerRadius="6" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="{Binding Status}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                <CheckBox Content="Автообновление" 
+                <TextBlock Text="{Binding Status}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                <CheckBox Content="Автообновление каждые 5 сек" 
                           IsChecked="{Binding AutoUpdateEnabled}" 
-                          VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <TextBlock Text="Интервал (сек):" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <TextBox Text="{Binding UpdateIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" 
-                         Width="60" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <Button Content="Справка" Click="HelpButton_Click" Width="100" Padding="10,6"/>
+                          Margin="30,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
@@ -144,13 +139,26 @@
                         <TextBlock Grid.Column="0" Text="Видеопамять:" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1" Text="{Binding Gpu.AdapterRAMGB, Mode=OneWay}"/>
                     </Grid>
-                    <Grid>
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="180"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Разрешение экрана:" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1" Text="{Binding Gpu.Resolution, Mode=OneWay}"/>
+                    </Grid>
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Загрузка GPU:" VerticalAlignment="Center" FontWeight="Medium"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <ProgressBar Value="{Binding Gpu.LoadPercent, Mode=OneWay}" 
+                                         Maximum="100" Width="220" Height="20" Margin="0,0,12,0"/>
+                            <TextBlock Text="{Binding Gpu.LoadPercent, Mode=OneWay, StringFormat={}{0:F1}%}" 
+                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </TabItem>
@@ -179,11 +187,13 @@
             </TabItem>
         </TabControl>
 
+     
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <Button Content="Обновить" Command="{Binding RefreshCommand}" Width="120" Margin="0,0,16,0" Padding="10,6"/>
             <Button Content="TXT" Command="{Binding ExportTxtCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
             <Button Content="CSV" Command="{Binding ExportCsvCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
             <Button Content="JSON" Command="{Binding ExportJsonCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
+            <Button Content="Справка" Click="HelpButton_Click" Width="100" Margin="8,0,0,0" Padding="10,6"/>
         </StackPanel>
     </Grid>
 </Window>

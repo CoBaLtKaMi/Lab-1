@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Threading;
-using System.Diagnostics;
 
 namespace WpfApp1
 {
@@ -100,11 +100,10 @@ namespace WpfApp1
 
         public VideoControllerInfo GetGpuInfo()
         {
-            var info = new VideoControllerInfo { Name = "—", AdapterRAMBytes = 0, Resolution = "—" };
+            var info = new VideoControllerInfo { Name = "—", AdapterRAMBytes = 0, Resolution = "—", LoadPercent = 0 };
 
             try
             {
-                // Видеопамять — максимум из всех адаптеров
                 long maxRam = 0;
                 string bestName = "—";
 
@@ -126,7 +125,6 @@ namespace WpfApp1
                 info.Name = bestName;
                 info.AdapterRAMBytes = maxRam;
 
-                // Разрешение — из активного контроллера
                 using (var searcher = new ManagementObjectSearcher("SELECT CurrentHorizontalResolution, CurrentVerticalResolution FROM Win32_VideoController"))
                 {
                     var obj = searcher.Get().Cast<ManagementObject>()
@@ -140,13 +138,54 @@ namespace WpfApp1
                             info.Resolution = $"{w} × {h}";
                     }
                 }
+
+                info.LoadPercent = GetGpuLoadFast();
             }
             catch (Exception ex)
             {
-                info.Name = "Ошибка WMI: " + ex.Message;
+                info.Name = "Ошибка: " + ex.Message;
             }
 
             return info;
+        }
+
+        private double GetGpuLoadFast()
+        {
+            try
+            {
+                var category = new PerformanceCounterCategory("GPU Engine");
+                var instances = category.GetInstanceNames()
+                    .Where(n => n.Contains("engtype_3D") || n.Contains("3D") || n.Contains("CUDA") || n.Contains("Graphics"))
+                    .Take(5) // ограничиваем 5 штуками — чтобы не ждать минуты
+                    .ToArray();
+
+                if (instances.Length == 0) return 0;
+
+                double maxLoad = 0;
+
+                foreach (var instance in instances)
+                {
+                    try
+                    {
+                        using (var counter = new PerformanceCounter("GPU Engine", "Utilization Percentage", instance, true))
+                        {
+                            counter.NextValue(); // первый вызов — игнорируем
+                            Thread.Sleep(1500); // 1.5 секунды — оптимально для точности
+                            double value = counter.NextValue();
+
+                            if (value > maxLoad)
+                                maxLoad = value;
+                        }
+                    }
+                    catch { /* пропускаем ошибочный инстанс */ }
+                }
+
+                return Math.Min(100.0, maxLoad);
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public List<NetworkAdapterInfo> GetNetworkAdapters()
