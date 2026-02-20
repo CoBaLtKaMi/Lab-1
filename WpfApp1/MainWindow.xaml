@@ -1,0 +1,189 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WpfApp1"
+        Title="Мониторинг оборудования (WMI)" Height="740" Width="900"
+        WindowStartupLocation="CenterScreen" MinHeight="600" MinWidth="800">
+
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Панель управления -->
+        <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" 
+                Padding="12" CornerRadius="6" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Status}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                <CheckBox Content="Автообновление" 
+                          IsChecked="{Binding AutoUpdateEnabled}" 
+                          VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock Text="Интервал (сек):" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Text="{Binding UpdateIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" 
+                         Width="60" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button Content="Справка" Click="HelpButton_Click" Width="100" Padding="10,6"/>
+            </StackPanel>
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="0,0,0,16">
+            <TabItem Header="Процессор">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="{Binding Cpu.Name, Mode=OneWay}" 
+                                   FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Ядер:" FontWeight="Medium"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Cpu.NumberOfCores, Mode=OneWay}"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Потоков:" FontWeight="Medium"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Cpu.NumberOfLogicalProcessors, Mode=OneWay}"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Базовая частота:" FontWeight="Medium"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Cpu.MaxClockSpeed, Mode=OneWay, StringFormat={}{0} МГц}"/>
+                        </Grid>
+                        <Grid Margin="0,12,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Загрузка ЦП:" VerticalAlignment="Center" FontWeight="Medium"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <ProgressBar Value="{Binding Cpu.LoadPercent, Mode=OneWay}" 
+                                             Maximum="100" Width="220" Height="20" Margin="0,0,12,0"/>
+                                <TextBlock Text="{Binding Cpu.LoadPercent, Mode=OneWay, StringFormat={}{0:F1}%}" 
+                                           FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Память">
+                <StackPanel Margin="20">
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Всего ОЗУ:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Memory.TotalVisibleMemoryMB, Mode=OneWay, StringFormat={}{0:N0} МБ}"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Свободно:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Memory.FreePhysicalMemoryMB, Mode=OneWay, StringFormat={}{0:N0} МБ}"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Использовано:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Memory.UsedMemoryMB, Mode=OneWay, StringFormat={}{0:N0} МБ}"/>
+                    </Grid>
+                    <Grid Margin="0,12,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Загрузка памяти:" VerticalAlignment="Center" FontWeight="Medium"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <ProgressBar Value="{Binding Memory.UsagePercent, Mode=OneWay}" 
+                                         Maximum="100" Width="220" Height="20" Margin="0,0,12,0"/>
+                            <TextBlock Text="{Binding Memory.UsagePercent, Mode=OneWay, StringFormat={}{0:F1}%}" 
+                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="Модули памяти:" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <ItemsControl ItemsSource="{Binding Memory.Modules, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Margin="0,2,0,8"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Диски">
+                <ListBox ItemsSource="{Binding Disks.LogicalDisksInfo, Mode=OneWay}" Margin="20"/>
+            </TabItem>
+
+            <TabItem Header="Графический процессор">
+                <StackPanel Margin="20">
+                    <TextBlock Text="{Binding Gpu.Name, Mode=OneWay}" 
+                               FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Видеопамять:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Gpu.AdapterRAMGB, Mode=OneWay}"/>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Разрешение экрана:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Gpu.Resolution, Mode=OneWay}"/>
+                    </Grid>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Сеть">
+                <ListView ItemsSource="{Binding NetworkAdapters, Mode=OneWay}" Margin="20">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Адаптер" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn Header="MAC" Width="140" DisplayMemberBinding="{Binding MACAddress}"/>
+                            <GridViewColumn Header="Статус" Width="120" DisplayMemberBinding="{Binding NetConnectionStatus}"/>
+                            <GridViewColumn Header="Скорость" Width="140" DisplayMemberBinding="{Binding SpeedMbps}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+
+            <TabItem Header="Система">
+                <StackPanel Margin="20">
+                    <TextBlock Text="{Binding SystemInfo.OSName, Mode=OneWay}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding SystemInfo.OSVersion, Mode=OneWay, StringFormat=Версия: {0}}" Margin="0,4"/>
+                    <TextBlock Text="{Binding SystemInfo.OSArchitecture, Mode=OneWay}" Margin="0,4"/>
+                    <TextBlock Text="{Binding SystemInfo.ComputerName, Mode=OneWay, StringFormat=Имя ПК: {0}}" Margin="0,4"/>
+                    <TextBlock Text="{Binding SystemInfo.CurrentUser, Mode=OneWay, StringFormat=Пользователь: {0}}" Margin="0,4"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Обновить" Command="{Binding RefreshCommand}" Width="120" Margin="0,0,16,0" Padding="10,6"/>
+            <Button Content="TXT" Command="{Binding ExportTxtCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
+            <Button Content="CSV" Command="{Binding ExportCsvCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
+            <Button Content="JSON" Command="{Binding ExportJsonCommand}" Width="90" Margin="0,0,8,0" Padding="10,6"/>
+        </StackPanel>
+    </Grid>
+</Window>
